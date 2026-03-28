@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Ratnesh Srivastava | Academic Website</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,11 +47,11 @@
 
         ul {
             list-style-type: none;
-            padding: 0;
+            padding-left: 10px;
         }
 
         li {
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         a.file-link {
@@ -60,6 +61,28 @@
 
         a.file-link:hover {
             text-decoration: underline;
+        }
+
+        /* Dropdown Styling */
+        details {
+            margin: 10px 0;
+        }
+
+        summary {
+            font-weight: bold;
+            background: #e3eaf2;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        details[open] summary {
+            background: #cfe2ff;
+        }
+
+        details ul {
+            margin-top: 10px;
+            margin-left: 20px;
         }
 
         footer {
@@ -76,7 +99,7 @@
 
 <header>
     <h1>Dr. Ratnesh Srivastava</h1>
-    <p>Associate Professor, Department of Computer Science & Information Technology(CSIT), Guru Ghasidas Vishwavidyalaya, Bilaspur, Chhattisgarh, India | Academic Resources</p>
+    <p>Associate Professor, Department of CSIT, Guru Ghasidas Vishwavidyalaya | Academic Resources</p>
 </header>
 
 <nav>
@@ -93,8 +116,8 @@
     <section id="home">
         <h2>Welcome</h2>
         <p>
-            This website contains my academic materials including lecture notes,
-            research papers, and project resources for students.
+            This website contains academic materials including lecture notes,
+            research papers, and project resources.
         </p>
     </section>
 
@@ -102,34 +125,48 @@
     <section id="notes">
         <h2>📚 Notes</h2>
 
-        <h3>Master of Computer Applications(MCA)</h3>
-        <li>
-        Data Science
-        <ul>
-            <li><a class="file-link" href="notes/bsc/ml_notes.pdf" target="_blank">Understanding of Covariance/Correlation/P Value/Matrix Transpose/Cross Product/Log likelyhood/Softmax/logits</a></li>
-            <li><a class="file-link" href="notes/bsc/Pictorial Data Science.pdf" target="_blank">L1/L2_Regularization(Adjusting Features to include or discard during training)/Matrix Factorization/Spiking Neural Network</a></li>
-            <li><a class="file-link" href="notes/bsc/City Neural Network.pdf" target="_blank">Complete Model Comparison in City Network</a></li>
-            <li><a class="file-link" href="notes/bsc/Understanding.pdf" target="_blank">From Machine Learning to Advanced Concepts</a></li>
-             <li><a class="file-link" href="notes/bsc/Why and How1.pdf" target="_blank">Why and How? First</a></li>
-             <li><a class="file-link" href="notes/bsc/Why and How2.pdf" target="_blank">Why and How? Second</a></li>
-             <li><a class="file-link" href="notes/bsc/Why and How3.pdf" target="_blank">Why and How? Third</a></li>
-             <li><a class="file-link" href="notes/bsc/SVM_Transcript1.pdf" target="_blank">SVM</a></li>
-             <li><a class="file-link" href="notes/bsc/All Concetps in Details_Data Science.pdf" target="_blank">All Concetps in Data Science in Detail</a></li>
-        </ul>
-    </li>
+        <h3>Master of Computer Applications (MCA)</h3>
 
-        <h3>MCA</h3>
-        <ul>
-            <li><a class="file-link" href="notes/mca/advanced_java.pdf" target="_blank">Advanced Java</a></li>
-        </ul>
+        <!-- Cascaded Dropdown -->
+        <details>
+            <summary>Data Science</summary>
+            <ul>
+                <li><a class="file-link" href="notes/bsc/ml_notes.pdf" target="_blank">Covariance / Correlation / P-Value / Matrix Concepts</a></li>
+                <li><a class="file-link" href="notes/bsc/Pictorial Data Science.pdf" target="_blank">Regularization / Matrix Factorization / SNN</a></li>
+                <li><a class="file-link" href="notes/bsc/City Neural Network.pdf" target="_blank">City Network Model Comparison</a></li>
+                <li><a class="file-link" href="notes/bsc/Understanding.pdf" target="_blank">ML to Advanced Concepts</a></li>
+
+                <!-- Nested Cascade -->
+                <details>
+                    <summary>Why and How Series</summary>
+                    <ul>
+                        <li><a class="file-link" href="notes/bsc/Why and How1.pdf" target="_blank">Part 1</a></li>
+                        <li><a class="file-link" href="notes/bsc/Why and How2.pdf" target="_blank">Part 2</a></li>
+                        <li><a class="file-link" href="notes/bsc/Why and How3.pdf" target="_blank">Part 3</a></li>
+                    </ul>
+                </details>
+
+                <li><a class="file-link" href="notes/bsc/SVM_Transcript1.pdf" target="_blank">Support Vector Machine (SVM)</a></li>
+                <li><a class="file-link" href="notes/bsc/All Concetps in Details_Data Science.pdf" target="_blank">All Concepts in Detail</a></li>
+            </ul>
+        </details>
+
+        <!-- Another Subject -->
+        <details>
+            <summary>Advanced Java</summary>
+            <ul>
+                <li><a class="file-link" href="notes/mca/advanced_java.pdf" target="_blank">Advanced Java Notes</a></li>
+            </ul>
+        </details>
+
     </section>
 
     <!-- Research Section -->
     <section id="research">
         <h2>📄 Research Papers</h2>
         <ul>
-            <li><a class="file-link" href="research/paper1.pdf" target="_blank">Paper 1: Title of Research</a></li>
-            <li><a class="file-link" href="research/paper2.pdf" target="_blank">Paper 2: Title of Research</a></li>
+            <li><a class="file-link" href="research/paper1.pdf" target="_blank">Paper 1</a></li>
+            <li><a class="file-link" href="research/paper2.pdf" target="_blank">Paper 2</a></li>
         </ul>
     </section>
 
