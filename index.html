@@ -18,6 +18,16 @@
             text-align: center;
         }
 
+        /* Profile Photo */
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            margin-bottom: 10px;
+        }
+
         nav {
             background-color: #34495e;
             padding: 10px;
@@ -98,6 +108,9 @@
 <body>
 
 <header>
+    <!-- Add your image here -->
+    <img src="images/profile.jpg" alt="Dr. Ratnesh Srivastava" class="profile-pic">
+
     <h1>Dr. Ratnesh Srivastava</h1>
     <p>Associate Professor, Department of CSIT, Guru Ghasidas Vishwavidyalaya | Academic Resources</p>
 </header>
@@ -136,7 +149,7 @@
                 <li><a class="file-link" href="notes/bsc/City Neural Network.pdf" target="_blank">City Network Model Comparison</a></li>
                 <li><a class="file-link" href="notes/bsc/Understanding.pdf" target="_blank">ML to Advanced Concepts</a></li>
 
-                <!-- Nested Cascade -->
+                <!-- Nested Dropdown -->
                 <details>
                     <summary>Why and How Series</summary>
                     <ul>
