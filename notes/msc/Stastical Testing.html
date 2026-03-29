@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Analysis - Statistical Methods with Examples</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7f9;
+            color: #333;
+            padding-top: 20px;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 10px;
+        }
+        .card-header {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: 600;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .chart-container {
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        .prediction-meter {
+            height: 30px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .meter-fill {
+            height: 100%;
+            border-radius: 5px;
+            text-align: right;
+            padding-right: 10px;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+        }
+        .party-bjp {
+            background-color: #ff9933;
+        }
+        .party-inc {
+            background-color: #19aa8d;
+        }
+        .party-aap {
+            background-color: #00a2ff;
+        }
+        .party-others {
+            background-color: #6c757d;
+        }
+        .coefficient-table {
+            width: 100%;
+            margin: 15px 0;
+            border-collapse: collapse;
+        }
+        .coefficient-table th, .coefficient-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+        }
+        .coefficient-table th {
+            background-color: #f8f9fa;
+        }
+        .math-formula {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .test-explanation {
+            background-color: #e9f7fe;
+            border-left: 4px solid #2c3e50;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+        .test-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .list-group-item {
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+            border-left: 3px solid #2c3e50;
+        }
+        .btn-primary {
+            background-color: #2c3e50;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #1a2530;
+        }
+        .example-box {
+            background-color: #fff4e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ff9933;
+        }
+        .solution-box {
+            background-color: #e6f7ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #00a2ff;
+        }
+        .nav-tabs .nav-link {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        .nav-tabs .nav-link.active {
+            color: #2c3e50;
+            font-weight: 600;
+            background-color: #f8f9fa;
+            border-bottom: none;
+        }
+        .example-title {
+            color: #ff9933;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .solution-title {
+            color: #00a2ff;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .example-table {
+            width: 100%;
+            margin: 10px 0;
+            border-collapse: collapse;
+        }
+        .example-table th, .example-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+        }
+        .example-table th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">Election Analysis with Statistical Methods</h1>
+                <p class="lead text-center">Understanding how statistical tests are applied to analyze voting patterns and predict election outcomes</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">Statistical Test Selection</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Statistical Test</label>
+                            <select class="form-select" id="statTest">
+                                <option value="chi2">Chi-square Test</option>
+                                <option value="t-test">T-test</option>
+                                <option value="anova">ANOVA</option>
+                                <option value="regression">Regression Analysis</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="updateAnalysis()">Apply Filters</button>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">Statistical Results</div>
+                    <div class="card-body">
+                        <div id="statResults">
+                            <p class="text-center">No analysis performed yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="chart-container">
+                    <canvas id="demographicChart"></canvas>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Key Insights</div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush" id="insightsList">
+                                    <li class="list-group-item">Youth voters (18-25) show higher preference for AAP (χ² = 12.4, p < 0.05)</li>
+                                    <li class="list-group-item">Farmers are leaning towards regional parties in Punjab (r = 0.67, p < 0.01)</li>
+                                    <li class="list-group-item">Urban women showing increased support for BJP (β = 0.32, p < 0.05)</li>
+                                    <li class="list-group-item">Higher education correlates with voting for development issues (r = 0.58)</li>
+                                    <li class="list-group-item">OBC voters show significant shift from traditional voting patterns (χ² = 18.2, p < 0.01)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Prediction Summary</div>
+                            <div class="card-body">
+                                <div class="prediction-meter">
+                                    <div class="meter-fill party-bjp" style="width: 42%;">BJP: 42%</div>
+                                </div>
+                                <div class="prediction-meter">
+                                    <div class="meter-fill party-inc" style="width: 28%;">Congress: 28%</div>
+                                </div>
+                                <div class="prediction-meter">
+                                    <div class="meter-fill party-aap" style="width: 12%;">AAP: 12%</div>
+                                </div>
+                                <div class="prediction-meter">
+                                    <div class="meter-fill party-others" style="width: 18%;">Others: 18%</div>
+                                </div>
+                                <p class="mt-3 mb-0"><strong>Predicted Seats:</strong> NDA: 295 | UPA: 145 | Others: 103</p>
+                                <p class="math-formula">
+                                    Seat Prediction Model: \[ \text{Seats} = \beta_0 + \beta_1 \times \text{Vote\%} + \beta_2 \times \text{Margin} + \beta_3 \times \text{Alliance} \]
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">Regression Analysis</div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="regressionChart"></canvas>
+                        </div>
+                        <div class="math-container">
+                            <p>Multiple regression model for voting behavior:</p>
+                            <p>\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_3 + \epsilon \]</p>
+                            <p>Where:</p>
+                            <ul>
+                                <li>\( y \) = Probability of voting for a party</li>
+                                <li>\( x_1 \) = Income level</li>
+                                <li>\( x_2 \) = Education level</li>
+                                <li>\( x_3 \) = Age group</li>
+                                <li>\( \epsilon \) = Error term</li>
+                            </ul>
+                            
+                            <table class="coefficient-table">
+                                <thead>
+                                    <tr>
+                                        <th>Coefficient</th>
+                                        <th>Estimate</th>
+                                        <th>Std. Error</th>
+                                        <th>t-value</th>
+                                        <th>p-value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>β₀ (Intercept)</td>
+                                        <td>0.24</td>
+                                        <td>0.03</td>
+                                        <td>8.00</td>
+                                        <td>< 0.001</td>
+                                    </tr>
+                                    <tr>
+                                        <td>β₁ (Income)</td>
+                                        <td>0.32</td>
+                                        <td>0.05</td>
+                                        <td>6.40</td>
+                                        <td>< 0.001</td>
+                                    </tr>
+                                    <tr>
+                                        <td>β₂ (Education)</td>
+                                        <td>0.18</td>
+                                        <td>0.04</td>
+                                        <td>4.50</td>
+                                        <td>< 0.001</td>
+                                    </tr>
+                                    <tr>
+                                        <td>β₃ (Age)</td>
+                                        <td>-0.15</td>
+                                        <td>0.06</td>
+                                        <td>-2.50</td>
+                                        <td>0.012</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p>Model fit: R² = 0.67, Adjusted R² = 0.65, F-statistic = 48.3 (p < 0.001)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">Statistical Test Explanations with Examples</div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="testTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="chi2-tab" data-bs-toggle="tab" data-bs-target="#chi2" type="button" role="tab" aria-controls="chi2" aria-selected="true">Chi-square Test</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="t-test-tab" data-bs-toggle="tab" data-bs-target="#t-test" type="button" role="tab" aria-controls="t-test" aria-selected="false">T-test</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="anova-tab" data-bs-toggle="tab" data-bs-target="#anova" type="button" role="tab" aria-controls="anova" aria-selected="false">ANOVA</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="regression-tab" data-bs-toggle="tab" data-bs-target="#regression" type="button" role="tab" aria-controls="regression" aria-selected="false">Regression Analysis</button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content p-3" id="testTabsContent">
+                            <!-- Chi-square Test -->
+                            <div class="tab-pane fade show active" id="chi2" role="tabpanel" aria-labelledby="chi2-tab">
+                                <div class="test-explanation">
+                                    <h3 class="test-title">Chi-square Test</h3>
+                                    <p><strong>Why it's used:</strong> The Chi-square test is used to determine if there is a significant association between two categorical variables. In election analysis, it helps identify relationships between voter demographics (age, gender, income) and voting preferences.</p>
+                                    <p><strong>How it's used:</strong> The test compares observed frequencies in contingency tables with expected frequencies under the null hypothesis of independence. A significant result indicates that the variables are associated.</p>
+                                    <p class="math-formula">\[ \chi^2 = \sum \frac{(O_i - E_i)^2}{E_i} \]</p>
+                                    <p>Where \(O_i\) are observed frequencies and \(E_i\) are expected frequencies.</p>
+                                    
+                                    <div class="example-box">
+                                        <h4 class="example-title">Example: Age Group vs. Party Preference</h4>
+                                        <p>Suppose we want to test if there's a relationship between age groups and preference for a particular political party. We survey 500 voters and get the following results:</p>
+                                        
+                                        <table class="example-table">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>BJP</th>
+                                                    <th>Congress</th>
+                                                    <th>AAP</th>
+                                                    <th>Others</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>18-30</td>
+                                                    <td>40</td>
+                                                    <td>30</td>
+                                                    <td>50</td>
+                                                    <td>20</td>
+                                                    <td>140</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>31-45</td>
+                                                    <td>60</td>
+                                                    <td>40</td>
+                                                    <td>30</td>
+                                                    <td>20</td>
+                                                    <td>150</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>46-60</td>
+                                                    <td>70</td>
+                                                    <td>35</td>
+                                                    <td>20</td>
+                                                    <td>15</td>
+                                                    <td>140</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>60+</td>
+                                                    <td>50</td>
+                                                    <td>40</td>
+                                                    <td>10</td>
+                                                    <td>10</td>
+                                                    <td>110</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total</td>
+                                                    <td>220</td>
+                                                    <td>145</td>
+                                                    <td>110</td>
+                                                    <td>65</td>
+                                                    <td>540</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        
+                                        <p>Test the hypothesis at α = 0.05 that age group and party preference are independent.</p>
+                                    </div>
+                                    
+                                    <div class="solution-box">
+                                        <h4 class="solution-title">Solution:</h4>
+                                        <p><strong>Step 1:</strong> Set up hypotheses:</p>
+                                        <p>H₀: Age group and party preference are independent</p>
+                                        <p>H₁: Age group and party preference are not independent</p>
+                                        
+                                        <p><strong>Step 2:</strong> Calculate expected frequencies:</p>
+                                        <p>For each cell: \(E_{ij} = \frac{(Row\ Total) \times (Column\ Total)}{Grand\ Total}\)</p>
+                                        
+                                        <p><strong>Step 3:</strong> Compute Chi-square statistic:</p>
+                                        <p>\[ \chi^2 = \sum \frac{(O_{ij} - E_{ij})^2}{E_{ij}} \]</p>
+                                        
+                                        <p><strong>Step 4:</strong> After calculations, we find χ² = 32.45</p>
+                                        
+                                        <p><strong>Step 5:</strong> Degrees of freedom = (rows - 1) × (columns - 1) = (4-1) × (4-1) = 9</p>
+                                        
+                                        <p><strong>Step 6:</strong> Critical value for α = 0.05 with 9 df is 16.92</p>
+                                        
+                                        <p><strong>Step 7:</strong> Since 32.45 > 16.92, we reject the null hypothesis.</p>
+                                        
+                                        <p><strong>Conclusion:</strong> There is a significant association between age group and party preference.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- T-test -->
+                            <div class="tab-pane fade" id="t-test" role="tabpanel" aria-labelledby="t-test-tab">
+                                <div class="test-explanation">
+                                    <h3 class="test-title">T-test</h3>
+                                    <p><strong>Why it's used:</strong> The T-test compares the means of two groups to determine if they are statistically different. In election analysis, it might be used to compare support levels for a candidate between two regions or demographic groups.</p>
+                                    <p><strong>How it's used:</strong> The test calculates a t-value based on the difference between means, accounting for variability and sample size. A significant t-value suggests a real difference between groups.</p>
+                                    <p class="math-formula">\[ t = \frac{\bar{X}_1 - \bar{X}_2}{s_p \sqrt{\frac{1}{n_1} + \frac{1}{n_2}}} \]</p>
+                                    <p>Where \(\bar{X}_1\) and \(\bar{X}_2\) are sample means, \(s_p\) is the pooled standard deviation, and \(n_1\), \(n_2\) are sample sizes.</p>
+                                    
+                                    <div class="example-box">
+                                        <h4 class="example-title">Example: Urban vs Rural Support for a Candidate</h4>
+                                        <p>Suppose we want to compare support for a candidate between urban and rural areas. We survey 30 urban voters and 35 rural voters, with the following results:</p>
+                                        <p>Urban: Mean support = 65%, Standard deviation = 8%, Sample size = 30</p>
+                                        <p>Rural: Mean support = 58%, Standard deviation = 10%, Sample size = 35</p>
+                                        <p>Test at α = 0.05 if there's a significant difference in support between urban and rural areas.</p>
+                                    </div>
+                                    
+                                    <div class="solution-box">
+                                        <h4 class="solution-title">Solution:</h4>
+                                        <p><strong>Step 1:</strong> Set up hypotheses:</p>
+                                        <p>H₀: μ_urban = μ_rural (no difference in support)</p>
+                                        <p>H₁: μ_urban ≠ μ_rural (difference in support)</p>
+                                        
+                                        <p><strong>Step 2:</strong> Calculate pooled standard deviation:</p>
+                                        <p>\[ s_p = \sqrt{\frac{(n_1 - 1)s_1^2 + (n_2 - 1)s_2^2}{n_1 + n_2 - 2}} \]</p>
+                                        <p>\[ s_p = \sqrt{\frac{(30 - 1)8^2 + (35 - 1)10^2}{30 + 35 - 2}} = \sqrt{\frac{29 \times 64 + 34 \times 100}{63}} = \sqrt{\frac{1856 + 3400}{63}} = \sqrt{\frac{5256}{63}} = \sqrt{83.43} = 9.13 \]</p>
+                                        
+                                        <p><strong>Step 3:</strong> Compute t-statistic:</p>
+                                        <p>\[ t = \frac{\bar{X}_1 - \bar{X}_2}{s_p \sqrt{\frac{1}{n_1} + \frac{1}{n_2}}} = \frac{65 - 58}{9.13 \sqrt{\frac{1}{30} + \frac{1}{35}}} = \frac{7}{9.13 \sqrt{0.0333 + 0.0286}} = \frac{7}{9.13 \sqrt{0.0619}} = \frac{7}{9.13 \times 0.2488} = \frac{7}{2.27} = 3.08 \]</p>
+                                        
+                                        <p><strong>Step 4:</strong> Degrees of freedom = n₁ + n₂ - 2 = 30 + 35 - 2 = 63</p>
+                                        
+                                        <p><strong>Step 5:</strong> Critical t-value for α = 0.05 with 63 df is approximately 2.00</p>
+                                        
+                                        <p><strong>Step 6:</strong> Since |3.08| > 2.00, we reject the null hypothesis.</p>
+                                        
+                                        <p><strong>Conclusion:</strong> There is a significant difference in support for the candidate between urban and rural areas.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ANOVA -->
+                            <div class="tab-pane fade" id="anova" role="tabpanel" aria-labelledby="anova-tab">
+                                <div class="test-explanation">
+                                    <h3 class="test-title">ANOVA</h3>
+                                    <p><strong>Why it's used:</strong> Analysis of Variance (ANOVA) is used to compare means across three or more groups. In election analysis, it could determine if voting patterns differ significantly across multiple age groups, income brackets, or regions.</p>
+                                    <p><strong>How it's used:</strong> ANOVA partitions the total variance into between-group and within-group components. The F-ratio tests whether between-group variance is significantly larger than within-group variance.</p>
+                                    <p class="math-formula">\[ F = \frac{\text{Between-group variability}}{\text{Within-group variability}} = \frac{MS_{between}}{MS_{within}} \]</p>
+                                    
+                                    <div class="example-box">
+                                        <h4 class="example-title">Example: Support for a Policy Across Income Groups</h4>
+                                        <p>Suppose we want to compare support for a new policy across three income groups (low, middle, high). We survey voters and get the following support percentages:</p>
+                                        <p>Low income: 45, 48, 42, 50, 47 (n=5, Mean=46.4)</p>
+                                        <p>Middle income: 55, 58, 60, 57, 55 (n=5, Mean=57.0)</p>
+                                        <p>High income: 70, 72, 68, 75, 70 (n=5, Mean=71.0)</p>
+                                        <p>Test at α = 0.05 if there's a significant difference in support across income groups.</p>
+                                    </div>
+                                    
+                                    <div class="solution-box">
+                                        <h4 class="solution-title">Solution:</h4>
+                                        <p><strong>Step 1:</strong> Set up hypotheses:</p>
+                                        <p>H₀: μ_low = μ_middle = μ_high (no difference in support)</p>
+                                        <p>H₁: At least one mean is different</p>
+                                        
+                                        <p><strong>Step 2:</strong> Calculate overall mean:</p>
+                                        <p>Grand mean = (46.4 + 57.0 + 71.0)/3 = 58.13</p>
+                                        
+                                        <p><strong>Step 3:</strong> Calculate Sum of Squares Between (SSB):</p>
+                                        <p>SSB = Σn_i(mean_i - grand_mean)² = 5×(46.4-58.13)² + 5×(57.0-58.13)² + 5×(71.0-58.13)²</p>
+                                        <p>SSB = 5×(-11.73)² + 5×(-1.13)² + 5×(12.87)² = 5×137.59 + 5×1.28 + 5×165.64 = 687.95 + 6.40 + 828.20 = 1522.55</p>
+                                        
+                                        <p><strong>Step 4:</strong> Calculate Sum of Squares Within (SSW):</p>
+                                        <p>SSW = ΣΣ(x_ij - mean_i)²</p>
+                                        <p>Low: (45-46.4)² + (48-46.4)² + (42-46.4)² + (50-46.4)² + (47-46.4)² = 1.96 + 2.56 + 19.36 + 12.96 + 0.36 = 37.2</p>
+                                        <p>Middle: (55-57)² + (58-57)² + (60-57)² + (57-57)² + (55-57)² = 4 + 1 + 9 + 0 + 4 = 18</p>
+                                        <p>High: (70-71)² + (72-71)² + (68-71)² + (75-71)² + (70-71)² = 1 + 1 + 9 + 16 + 1 = 28</p>
+                                        <p>SSW = 37.2 + 18 + 28 = 83.2</p>
+                                        
+                                        <p><strong>Step 5:</strong> Calculate Mean Squares:</p>
+                                        <p>MSB = SSB / (k-1) = 1522.55 / 2 = 761.28</p>
+                                        <p>MSW = SSW / (N-k) = 83.2 / (15-3) = 83.2 / 12 = 6.93</p>
+                                        
+                                        <p><strong>Step 6:</strong> Calculate F-statistic:</p>
+                                        <p>F = MSB / MSW = 761.28 / 6.93 = 109.85</p>
+                                        
+                                        <p><strong>Step 7:</strong> Compare with critical F-value (α=0.05, df₁=2, df₂=12) = 3.89</p>
+                                        
+                                        <p><strong>Step 8:</strong> Since 109.85 > 3.89, we reject the null hypothesis.</p>
+                                        
+                                        <p><strong>Conclusion:</strong> There is a significant difference in policy support across income groups.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Regression Analysis -->
+                            <div class="tab-pane fade" id="regression" role="tabpanel" aria-labelledby="regression-tab">
+                                <div class="test-explanation">
+                                    <h3 class="test-title">Regression Analysis</h3>
+                                    <p><strong>Why it's used:</strong> Regression analysis models the relationship between a dependent variable and one or more independent variables. In election analysis, it predicts voting behavior based on demographic factors, past voting patterns, or economic indicators.</p>
+                                    <p><strong>How it's used:</strong> The method estimates coefficients that represent the relationship between predictors and the outcome variable. It helps identify which factors most influence voting decisions and to what extent.</p>
+                                    <p class="math-formula">\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_n x_n + \epsilon \]</p>
+                                    <p>Where \(y\) is the dependent variable, \(x_i\) are independent variables, \(\beta_i\) are coefficients, and \(\epsilon\) is the error term.</p>
+                                    
+                                    <div class="example-box">
+                                        <h4 class="example-title">Example: Predicting Voting Probability</h4>
+                                        <p>Suppose we want to predict the probability of voting for a particular party based on income, education, and age. We collect data from 100 voters and run a multiple regression analysis.</p>
+                                        <p>Dependent variable: Probability of voting for Party X (0-1 scale)</p>
+                                        <p>Independent variables:</p>
+                                        <ul>
+                                            <li>Income (in thousands)</li>
+                                            <li>Education (years of schooling)</li>
+                                            <li>Age (in years)</li>
+                                        </ul>
+                                        <p>After running the regression, we get the following output:</p>
+                                        
+                                        <table class="example-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Variable</th>
+                                                    <th>Coefficient</th>
+                                                    <th>Std. Error</th>
+                                                    <th>t-value</th>
+                                                    <th>p-value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Intercept</td>
+                                                    <td>0.15</td>
+                                                    <td>0.05</td>
+                                                    <td>3.00</td>
+                                                    <td>0.003</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Income</td>
+                                                    <td>0.002</td>
+                                                    <td>0.001</td>
+                                                    <td>2.00</td>
+                                                    <td>0.048</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Education</td>
+                                                    <td>0.025</td>
+                                                    <td>0.008</td>
+                                                    <td>3.13</td>
+                                                    <td>0.002</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Age</td>
+                                                    <td>-0.003</td>
+                                                    <td>0.001</td>
+                                                    <td>-3.00</td>
+                                                    <td>0.003</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        
+                                        <p>R² = 0.45, Adjusted R² = 0.43, F-statistic = 15.8 (p < 0.001)</p>
+                                        
+                                        <p>Interpret the results and predict the voting probability for a voter with income = 60,000, education = 16 years, and age = 45.</p>
+                                    </div>
+                                    
+                                    <div class="solution-box">
+                                        <h4 class="solution-title">Solution:</h4>
+                                        <p><strong>Step 1:</strong> Interpret the coefficients:</p>
+                                        <ul>
+                                            <li>Intercept (0.15): The baseline probability when all independent variables are zero</li>
+                                            <li>Income (0.002): For each additional $1,000 income, voting probability increases by 0.002</li>
+                                            <li>Education (0.025): For each additional year of education, voting probability increases by 0.025</li>
+                                            <li>Age (-0.003): For each additional year of age, voting probability decreases by 0.003</li>
+                                        </ul>
+                                        
+                                        <p><strong>Step 2:</strong> Check statistical significance:</p>
+                                        <p>All variables have p-values < 0.05, indicating they are statistically significant predictors.</p>
+                                        
+                                        <p><strong>Step 3:</strong> Assess model fit:</p>
+                                        <p>R² = 0.45 means 45% of the variance in voting probability is explained by the model.</p>
+                                        
+                                        <p><strong>Step 4:</strong> Make a prediction:</p>
+                                        <p>For a voter with income = 60, education = 16, age = 45:</p>
+                                        <p>\[ y = 0.15 + 0.002 \times 60 + 0.025 \times 16 - 0.003 \times 45 \]</p>
+                                        <p>\[ y = 0.15 + 0.12 + 0.40 - 0.135 = 0.535 \]</p>
+                                        
+                                        <p><strong>Conclusion:</strong> The predicted probability of this voter supporting Party X is 53.5%.</p>
+                                        <p>The model suggests that education has the strongest positive effect on voting probability, while age has a negative effect.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize charts
+        const demographicCtx = document.getElementById('demographicChart').getContext('2d');
+        const demographicChart = new Chart(demographicCtx, {
+            type: 'bar',
+            data: {
+                labels: ['18-25', '26-35', '36-45', '46-55', '56-65', '65+'],
+                datasets: [
+                    {
+                        label: 'BJP',
+                        data: [35, 42, 48, 45, 52, 55],
+                        backgroundColor: '#ff9933'
+                    },
+                    {
+                        label: 'Congress',
+                        data: [30, 28, 25, 27, 24, 22],
+                        backgroundColor: '#19aa8d'
+                    },
+                    {
+                        label: 'AAP',
+                        data: [25, 18, 15, 12, 10, 8],
+                        backgroundColor: '#00a2ff'
+                    },
+                    {
+                        label: 'Others',
+                        data: [10, 12, 12, 16, 14, 15],
+                        backgroundColor: '#6c757d'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Voting Preferences by Age Group'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Age Group'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Percentage Support'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const regressionCtx = document.getElementById('regressionChart').getContext('2d');
+        const regressionChart = new Chart(regressionCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Education vs Support for Development Issues',
+                    data: [
+                        {x: 8, y: 35}, {x: 10, y: 42}, {x: 12, y: 48}, 
+                        {x: 14, y: 55}, {x: 16, y: 62}, {x: 18, y: 68},
+                        {x: 8, y: 32}, {x: 10, y: 38}, {x: 12, y: 45},
+                        {x: 14, y: 52}, {x: 16, y: 58}, {x: 18, y: 65}
+                    ],
+                    backgroundColor: '#2c3e50'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Correlation between Education Level and Support for Development Issues'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Years of Education'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Support for Development Issues (%)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Function to update analysis based on selected test
+        function updateAnalysis() {
+            const testType = document.getElementById('statTest').value;
+            const resultsDiv = document.getElementById('statResults');
+            
+            let resultsHTML = '';
+            
+            switch(testType) {
+                case 'chi2':
+                    resultsHTML = `
+                        <h4>Chi-square Test Results</h4>
+                        <p>Testing association between age group and party preference:</p>
+                        <p>χ² = 12.4, df = 6, p < 0.05</p>
+                        <p>The result is statistically significant, indicating a relationship between age and voting preference.</p>
+                        <p class="math-formula">\[ \chi^2 = \sum \frac{(O_i - E_i)^2}{E_i} = 12.4 \]</p>
+                    `;
+                    break;
+                case 't-test':
+                    resultsHTML = `
+                        <h4>T-test Results</h4>
+                        <p>Comparing support for BJP between urban and rural voters:</p>
+                        <p>t = 2.89, df = 198, p < 0.01</p>
+                        <p>The result is statistically significant, indicating higher support for BJP in urban areas.</p>
+                        <p class="math-formula">\[ t = \frac{\bar{X}_1 - \bar{X}_2}{s_p \sqrt{\frac{2}{n}}} = 2.89 \]</p>
+                    `;
+                    break;
+                case 'anova':
+                    resultsHTML = `
+                        <h4>ANOVA Results</h4>
+                        <p>Comparing support for Congress across different income brackets:</p>
+                        <p>F = 4.72, df = 4, p < 0.01</p>
+                        <p>The result is statistically significant, indicating differences in support based on income level.</p>
+                        <p class="math-formula">\[ F = \frac{\text{Between-group variability}}{\text{Within-group variability}} = 4.72 \]</p>
+                    `;
+                    break;
+                case 'regression':
+                    resultsHTML = `
+                        <h4>Regression Analysis Results</h4>
+                        <p>Predicting voting probability based on income, education, and age:</p>
+                        <p>R² = 0.67, Adjusted R² = 0.65, F = 48.3 (p < 0.001)</p>
+                        <p>All predictors are statistically significant (p < 0.05).</p>
+                        <p class="math-formula">\[ y = 0.24 + 0.32x_1 + 0.18x_2 - 0.15x_3 \]</p>
+                    `;
+                    break;
+            }
+            
+            resultsDiv.innerHTML = resultsHTML;
+            
+            // Re-render MathJax to process the new formulas
+            MathJax.typeset();
+        }
+    </script>
+</body>
+</html>

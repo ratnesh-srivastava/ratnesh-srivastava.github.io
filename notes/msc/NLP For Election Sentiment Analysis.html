@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLP for Election Sentiment Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .nav-tabs .nav-link {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .tab-content {
+            background: white;
+            padding: 25px;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 500px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: #3a55c4;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a55c4;
+            border-color: #2a45b4;
+        }
+        
+        .card {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .form-label {
+            font-weight: 500;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+        
+        .party-bjp { color: #ff9933; font-weight: bold; }
+        .party-inc { color: #006400; font-weight: bold; }
+        .party-aap { color: #0078d7; font-weight: bold; }
+        .party-others { color: #6c757d; font-weight: bold; }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #ddd;
+        }
+        
+        .tech-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .math-container {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .sub-tabs .nav-link {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .technical-diagram {
+            width: 100%;
+            max-width: 600px;
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .sampling-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .sampling-table th, .sampling-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .sampling-table th {
+            background-color: #f8f9fa;
+        }
+        
+        .model-comparison {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .model-card {
+            width: 200px;
+            padding: 15px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .workflow-step {
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid var(--primary-color);
+            background-color: #f8f9fa;
+        }
+        
+        .diagram-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .graph-types {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .graph-card {
+            width: 300px;
+            margin: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        
+        .graph-img {
+            width: 100%;
+            height: 200px;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            border-radius: 3px;
+        }
+        
+        .nlp-pipeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .pipeline-step {
+            width: 150px;
+            padding: 15px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            text-align: center;
+            position: relative;
+        }
+        
+        .pipeline-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #6c757d;
+        }
+        
+        .sentiment-meter {
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .meter-fill {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+        }
+        
+        .positive { background-color: var(--secondary-color); }
+        .negative { background-color: var(--danger-color); }
+        .neutral { background-color: var(--warning-color); }
+        
+        .word-cloud {
+            width: 100%;
+            height: 300px;
+            background-color: #f0f0f0;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-style: italic;
+            color: #6c757d;
+        }
+        
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            margin: 20px auto;
+            width: 300px;
+        }
+        
+        .matrix-cell {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        
+        .matrix-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .true-positive { background-color: rgba(28, 200, 138, 0.3); }
+        .false-positive { background-color: rgba(231, 74, 59, 0.3); }
+        .false-negative { background-color: rgba(246, 194, 62, 0.3); }
+        .true-negative { background-color: rgba(78, 115, 223, 0.3); }
+        
+        .python-code {
+            background-color: #2b2b2b;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .token {
+            display: inline-block;
+            margin: 2px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+        
+        .token-noun { background-color: #4e73df; color: white; }
+        .token-verb { background-color: #1cc88a; color: white; }
+        .token-adj { background-color: #f6c23e; color: black; }
+        .token-adv { background-color: #e74a3b; color: white; }
+        .token-other { background-color: #6c757d; color: white; }
+        
+        /* Explanation Tab Specific Styles */
+        .explanation-section {
+            margin-bottom: 30px;
+        }
+        
+        .methodology-step {
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary-color);
+            background-color: #f8f9fc;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .interpretation-guide {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .key-term {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .example-container {
+            background-color: #f8f9fa;
+            border-left: 3px solid var(--secondary-color);
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .limitation-item {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid var(--warning-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>NLP for Election Sentiment Analysis</h1>
+        <p class="lead">Natural Language Processing Application for Political Sentiment Forecasting</p>
+        <p class="lead">Presented By: <b><font color="white">Dr. Ratnesh Prasad Srivastava, CSIT, GGV, C.G.</font></b></p>
+    </div>
+
+    <div class="container">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab">Data Collection</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preprocessing-tab" data-bs-toggle="tab" data-bs-target="#preprocessing" type="button" role="tab">Text Preprocessing</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis" type="button" role="tab">Sentiment Analysis</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="technical-tab" data-bs-toggle="tab" data-bs-target="#technical" type="button" role="tab">Technical Details</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="explanation-tab" data-bs-toggle="tab" data-bs-target="#explanation" type="button" role="tab">Explanation</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <!-- Data Collection Tab -->
+            <div class="tab-pane fade show active" id="data" role="tabpanel">
+                <h3>Social Media Data Collection</h3>
+                <p>Collect and process social media data for political sentiment analysis using web scraping and API integration.</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Data Collection Parameters</div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Data Sources</label>
+                                    <select class="form-select" multiple id="dataSources">
+                                        <option value="twitter" selected>Twitter</option>
+                                        <option value="facebook" selected>Facebook</option>
+                                        <option value="reddit">Reddit</option>
+                                        <option value="news">News Websites</option>
+                                        <option value="youtube">YouTube Comments</option>
+                                    </select>
+                                    <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Keywords/Hashtags</label>
+                                    <textarea class="form-control" id="keywords" rows="3">#Election2024, #LokSabha, #Vote, BJP, Congress, AAP, Modi, Rahul, Kejriwal</textarea>
+                                    <small class="text-muted">Comma-separated list of keywords to track</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Time Period</label>
+                                    <div class="row">
+                                        <div class="col">
+                                            <input type="date" class="form-control" id="startDate" value="2024-01-01">
+                                            <small class="text-muted">Start Date</small>
+                                        </div>
+                                        <div class="col">
+                                            <input type="date" class="form-control" id="endDate" value="2024-04-30">
+                                            <small class="text-muted">End Date</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Number of Samples</label>
+                                    <input type="range" class="form-range" min="1000" max="100000" step="1000" id="sampleRange" oninput="updateSampleValue()">
+                                    <div class="d-flex justify-content-between">
+                                        <small>1,000</small>
+                                        <small id="sampleValue">10,000</small>
+                                        <small>100,000</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Languages</label>
+                                    <select class="form-select" multiple id="languages">
+                                        <option value="hindi" selected>Hindi</option>
+                                        <option value="english" selected>English</option>
+                                        <option value="tamil">Tamil</option>
+                                        <option value="telugu">Telugu</option>
+                                        <option value="bengali">Bengali</option>
+                                        <option value="marathi">Marathi</option>
+                                    </select>
+                                    <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
+                                </div>
+                                
+                                <button class="btn btn-primary" onclick="collectData()">Collect Data</button>
+                                <button class="btn btn-outline-secondary" onclick="downloadData()">Download Dataset</button>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-4">
+                            <div class="card-header">Data Statistics</div>
+                            <div class="card-body">
+                                <div class="math-container">
+                                    <h6>Sample Size Calculation</h6>
+                                    <p>For sentiment analysis, the required sample size can be calculated as:</p>
+                                    <p>\[ n = \frac{z^2 \times p(1-p)}{e^2} \]</p>
+                                    <p>Where:</p>
+                                    <ul>
+                                        <li>\( n \) = required sample size</li>
+                                        <li>\( z \) = z-score (1.96 for 95% confidence level)</li>
+                                        <li>\( p \) = estimated proportion (0.5 for maximum variability)</li>
+                                        <li>\( e \) = margin of error (typically 0.03 for sentiment analysis)</li>
+                                    </ul>
+                                    <p>For a 95% confidence level and 3% margin of error: \[ n = \frac{1.96^2 \times 0.5(1-0.5)}{0.03^2} \approx 1067 \]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Collected Data Preview</div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Source</th>
+                                                <th>Text</th>
+                                                <th>Language</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dataPreview">
+                                            <tr><td colspan="4" class="text-center">No data collected yet</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="sourceDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-4">
+                            <div class="card-header">Data Quality Metrics</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="qualityMetricsChart"></canvas>
+                                </div>
+                                <div class="math-container">
+                                    <p>Data quality is assessed using:</p>
+                                    <p>\[ \text{Quality Score} = \frac{\text{Valid Records}}{\text{Total Records}} \times 100\% \]</p>
+                                    <p>Where valid records meet criteria for language, relevance, and completeness.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Text Preprocessing Tab -->
+            <div class="tab-pane fade" id="preprocessing" role="tabpanel">
+                <h3>Text Preprocessing Pipeline</h3>
+                <p>Clean and prepare text data for sentiment analysis using NLP techniques.</p>
+                
+                <div class="nlp-pipeline">
+                    <div class="pipeline-step">
+                        <h5>Raw Text</h5>
+                        <p class="small">"Modi is the best PM! #VoteBJP 🇮🇳"</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <h5>Cleaning</h5>
+                        <p class="small">Remove URLs, emojis, special chars</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <h5>Tokenization</h5>
+                        <p class="small">["Modi", "is", "the", "best", "PM", "VoteBJP"]</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <h5>Normalization</h5>
+                        <p class="small">Lowercasing, spelling correction</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <h5>POS Tagging</h5>
+                        <p class="small">[("Modi", "NOUN"), ("best", "ADJ"), ...]</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <h5>Feature Extraction</h5>
+                        <p class="small">TF-IDF, word embeddings</p>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Text Processing Options</div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Input Text</label>
+                                    <textarea class="form-control" id="inputText" rows="4">Narendra Modi is doing great work for India! The economy is growing fast. #DevelopedIndia</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Processing Steps</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="lowercaseCheck" checked>
+                                        <label class="form-check-label" for="lowercaseCheck">Convert to lowercase</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="removePunctCheck" checked>
+                                        <label class="form-check-label" for="removePunctCheck">Remove punctuation</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="removeStopwordsCheck" checked>
+                                        <label class="form-check-label" for="removeStopwordsCheck">Remove stopwords</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="lemmatizeCheck" checked>
+                                        <label class="form-check-label" for="lemmatizeCheck">Lemmatization</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="spellCheckCheck">
+                                        <label class="form-check-label" for="spellCheckCheck">Spell checking</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="removeUrlsCheck" checked>
+                                        <label class="form-check-label" for="removeUrlsCheck">Remove URLs/emojis</label>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn btn-primary" onclick="processText()">Process Text</button>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-4">
+                            <div class="card-header">Part-of-Speech Tags</div>
+                            <div class="card-body">
+                                <div id="posTags">
+                                    <span class="token token-noun">Modi (NOUN)</span>
+                                    <span class="token token-verb">doing (VERB)</span>
+                                    <span class="token token-adj">great (ADJ)</span>
+                                    <span class="token token-noun">work (NOUN)</span>
+                                    <span class="token token-noun">India (NOUN)</span>
+                                    <span class="token token-noun">economy (NOUN)</span>
+                                    <span class="token token-verb">growing (VERB)</span>
+                                    <span class="token token-adv">fast (ADV)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Processing Results</div>
+                            <div class="card-body">
+                                <h6>Original Text</h6>
+                                <p id="originalText">Narendra Modi is doing great work for India! The economy is growing fast. #DevelopedIndia</p>
+                                
+                                <h6 class="mt-3">Processed Text</h6>
+                                <p id="processedText">narendra modi great work india economy grow fast developedindia</p>
+                                
+                                <h6 class="mt-3">Python Code Example</h6>
+                                <div class="python-code">
+# Text preprocessing with NLTK and spaCy
+import nltk
+import spacy
+import re
+
+def preprocess_text(text):
+    # Convert to lowercase
+    text = text.lower()
+    
+    # Remove URLs, mentions, and hashtag symbols
+    text = re.sub(r'http\S+', '', text)
+    text = re.sub(r'@\w+', '', text)
+    text = re.sub(r'#', '', text)
+    
+    # Remove punctuation and numbers
+    text = re.sub(r'[^a-zA-Z\s]', '', text)
+    
+    # Tokenize
+    tokens = nltk.word_tokenize(text)
+    
+    # Remove stopwords
+    stop_words = set(nltk.corpus.stopwords.words('english'))
+    tokens = [token for token in tokens if token not in stop_words]
+    
+    # Lemmatization
+    nlp = spacy.load('en_core_web_sm')
+    doc = nlp(" ".join(tokens))
+    tokens = [token.lemma_ for token in doc]
+    
+    return " ".join(tokens)
+
+# Example usage
+original_text = "Narendra Modi is doing great work for India! #DevelopedIndia"
+processed_text = preprocess_text(original_text)
+print(processed_text)
+# Output: "narendra modi great work india developedindia"
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-4">
+                            <div class="card-header">Text Statistics</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="textStatsChart"></canvas>
+                                </div>
+                                <div class="math-container">
+                                    <p>Text statistics help understand the complexity of the data:</p>
+                                    <p>\[ \text{Type-Token Ratio} = \frac{\text{Number of Unique Words}}{\text{Total Words}} \]</p>
+                                    <p>Higher ratios indicate more diverse vocabulary.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sentiment Analysis Tab -->
+            <div class="tab-pane fade" id="analysis" role="tabpanel">
+                <h3>Sentiment Analysis and Prediction</h3>
+                <p>Analyze political sentiment from text data and predict election outcomes.</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">Analysis Parameters</div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Sentiment Analysis Model</label>
+                                    <select class="form-select" id="modelSelect">
+                                        <option value="vader">VADER (Rule-based)</option>
+                                        <option value="textblob">TextBlob (Lexicon-based)</option>
+                                        <option value="bert">BERT (Transformer)</option>
+                                        <option value="lstm">LSTM (Deep Learning)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Political Parties</label>
+                                    <select class="form-select" multiple id="partiesSelect">
+                                        <option value="bjp" selected>BJP</option>
+                                        <option value="congress" selected>Congress</option>
+                                        <option value="aap" selected>AAP</option>
+                                        <option value="others">Other Parties</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Time Frame</label>
+                                    <select class="form-select" id="timeFrameSelect">
+                                        <option value="7">Last 7 days</option>
+                                        <option value="30" selected>Last 30 days</option>
+                                        <option value="90">Last 90 days</option>
+                                        <option value="180">Last 6 months</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Region Filter</label>
+                                    <select class="form-select" id="regionSelect">
+                                        <option value="all">All India</option>
+                                        <option value="north">North India</option>
+                                        <option value="south">South India</option>
+                                        <option value="east">East India</option>
+                                        <option value="west">West India</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="btn btn-primary" onclick="analyzeSentiment()">Analyze Sentiment</button>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-4">
+                            <div class="card-header">Model Performance</div>
+                            <div class="card-body">
+                                <div id="modelPerformance">
+                                    <p class="text-center">No analysis performed yet</p>
+                                </div>
+                                <div class="confusion-matrix">
+                                    <div class="matrix-cell matrix-header"></div>
+                                    <div class="matrix-cell matrix-header">Predicted Positive</div>
+                                    <div class="matrix-cell matrix-header">Predicted Negative</div>
+                                    
+                                    <div class="matrix-cell matrix-header">Actual Positive</div>
+                                    <div class="matrix-cell true-positive">TP: 342</div>
+                                    <div class="matrix-cell false-negative">FN: 58</div>
+                                    
+                                    <div class="matrix-cell matrix-header">Actual Negative</div>
+                                    <div class="matrix-cell false-positive">FP: 42</div>
+                                    <div class="matrix-cell true-negative">TN: 358</div>
+                                </div>
+                                <div class="math-container">
+                                    <p>\[ \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN} = \frac{342 + 358}{342 + 358 + 42 + 58} = 0.875 \]</p>
+                                    <p>\[ \text{Precision} = \frac{TP}{TP + FP} = \frac{342}{342 + 42} = 0.891 \]</p>
+                                    <p>\[ \text{Recall} = \frac{TP}{TP + FN} = \frac{342}{342 + 58} = 0.855 \]</p>
+                                    <p>\[ F1 = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}} = 0.872 \]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <canvas id="sentimentChart"></canvas>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">Sentiment Distribution</div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="sentimentDistributionChart"></canvas>
+                                        </div>
+                                        <div class="sentiment-meter">
+                                            <div class="meter-fill positive" style="width: 45%;">Positive: 45%</div>
+                                        </div>
+                                        <div class="sentiment-meter">
+                                            <div class="meter-fill neutral" style="width: 30%;">Neutral: 30%</div>
+                                        </div>
+                                        <div class="sentiment-meter">
+                                            <div class="meter-fill negative" style="width: 25%;">Negative: 25%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">Prediction Summary</div>
+                                    <div class="card-body">
+                                        <div class="sentiment-meter">
+                                            <div class="meter-fill party-bjp" style="width: 42%;">BJP: 42%</div>
+                                        </div>
+                                        <div class="sentiment-meter">
+                                            <div class="meter-fill party-inc" style="width: 28%;">Congress: 28%</div>
+                                        </div>
+                                        <div class="sentiment-meter">
+                                            <div class="meter-fill party-aap" style="width: 12%;">AAP: 12%</div>
+                                        </div>
+                                        <div class="sentiment-meter">
+                                            <div class="meter-fill party-others" style="width: 18%;">Others: 18%</div>
+                                        </div>
+                                        <p class="mt-3 mb-0"><strong>Predicted Seats:</strong> NDA: 295 | UPA: 145 | Others: 103</p>
+                                        <p class="math-formula">
+                                            Sentiment-to-Seat Model: \[ \text{Seats} = \beta_0 + \beta_1 \times \text{Sentiment\%} + \beta_2 \times \text{Regional Weight} \]
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-4">
+                            <div class="card-header">Topic Modeling</div>
+                            <div class="card-body">
+                                <div class="word-cloud">
+                                    Word Cloud Visualization: Economy, Development, Jobs, Corruption, Leadership, Price, Farmers, Education
+                                </div>
+                                <div class="math-container">
+                                    <p>Latent Dirichlet Allocation (LDA) for topic modeling:</p>
+                                    <p>\[ P(\text{word} | \text{topic}) = \frac{\text{Count(word in topic)} + \beta}{\text{Count(all words in topic)} + V\beta} \]</p>
+                                    <p>Where \( V \) is the vocabulary size and \( \beta \) is the Dirichlet prior.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Technical Details Tab -->
+            <div class="tab-pane fade" id="technical" role="tabpanel">
+                <h3>Technical Details: NLP Methodologies</h3>
+                <p>Comprehensive overview of natural language processing techniques for political sentiment analysis.</p>
+                
+                <ul class="nav nav-tabs sub-tabs" id="technicalSubTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="nlp-tab" data-bs-toggle="tab" data-bs-target="#nlp" type="button" role="tab">NLP Fundamentals</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="models-tab" data-bs-toggle="tab" data-bs-target="#models" type="button" role="tab">Model Architectures</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="evaluation-tab" data-bs-toggle="tab" data-bs-target="#evaluation" type="button" role="tab">Model Evaluation</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="deployment-tab" data-bs-toggle="tab" data-bs-target="#deployment" type="button" role="tab">Deployment</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="technicalSubTabContent">
+                    <!-- NLP Fundamentals Tab -->
+                    <div class="tab-pane fade show active" id="nlp" role="tabpanel">
+                        <div class="tech-details">
+                            <h4>Natural Language Processing Fundamentals</h4>
+                            <p>Core concepts and techniques for processing and analyzing text data.</p>
+                            
+                            <h5>Text Representation Techniques</h5>
+                            <p>Text must be converted to numerical formats for machine learning:</p>
+                            
+                            <div class="model-comparison">
+                                <div class="model-card">
+                                    <h6>Bag of Words (BoW)</h6>
+                                    <p>\[ \text{Document} = [w_1, w_2, w_3, \ldots, w_n] \]</p>
+                                    <p>Simple frequency-based representation</p>
+                                </div>
+                                <div class="model-card">
+                                    <h6>TF-IDF</h6>
+                                    <p>\[ \text{TF-IDF}(t,d) = \text{TF}(t,d) \times \log\left(\frac{N}{\text{DF}(t)}\right) \]</p>
+                                    <p>Weights words by importance</p>
+                                </div>
+                                <div class="model-card">
+                                    <h6>Word Embeddings</h6>
+                                    <p>\[ \text{word} \rightarrow \text{dense vector} \]</p>
+                                    <p>Captures semantic relationships</p>
+                                </div>
+                            </div>
+                            
+                            <h5>Key NLP Tasks</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Task</th>
+                                            <th>Description</th>
+                                            <th>Application in Election Analysis</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Tokenization</td>
+                                            <td>Splitting text into words or subwords</td>
+                                            <td>Basic text preprocessing</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Part-of-Speech Tagging</td>
+                                            <td>Identifying grammatical categories</td>
+                                            <td>Focus on adjectives for sentiment</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Named Entity Recognition</td>
+                                            <td>Identifying people, organizations, locations</td>
+                                            <td>Tracking mentions of politicians and parties</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sentiment Analysis</td>
+                                            <td>Determining emotional tone</td>
+                                            <td>Measuring public opinion</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Topic Modeling</td>
+                                            <td>Discovering abstract topics</td>
+                                            <td>Identifying key election issues</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5>Sentiment Analysis Approaches</h5>
+                            <div class="technical-diagram">
+                                <div class="diagram-title">Sentiment Analysis Pipeline</div>
+                                <div class="workflow-step">1. Data Collection → Social media, news, forums</div>
+                                <div class="workflow-step">2. Text Preprocessing → Cleaning, normalization</div>
+                                <div class="workflow-step">3. Feature Extraction → TF-IDF, embeddings</div>
+                                <div class="workflow-step">4. Sentiment Classification → ML models, lexicons</div>
+                                <div class="workflow-step">5. Aggregation & Analysis → Trends, predictions</div>
+                            </div>
+                            
+                            <h5>Mathematical Foundations</h5>
+                            <div class="math-container">
+                                <p><strong>TF-IDF Calculation:</strong></p>
+                                <p>\[ \text{TF}(t,d) = \frac{\text{Number of times term } t \text{ appears in document } d}{\text{Total number of terms in document } d} \]</p>
+                                <p>\[ \text{IDF}(t) = \log\left(\frac{\text{Total number of documents}}{\text{Number of documents containing term } t}\right) \]</p>
+                                <p>\[ \text{TF-IDF}(t,d) = \text{TF}(t,d) \times \text{IDF}(t) \]</p>
+                                
+                                <p><strong>Cosine Similarity:</strong></p>
+                                <p>\[ \text{similarity} = \cos(\theta) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathbf{A}\| \|\mathbf{B}\|} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \sqrt{\sum_{i=1}^{n} B_i^2}} \]</p>
+                                <p>Used to measure similarity between documents or between queries and documents.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Model Architectures Tab -->
+                    <div class="tab-pane fade" id="models" role="tabpanel">
+                        <div class="tech-details">
+                            <h4>Model Architectures for Sentiment Analysis</h4>
+                            <p>Various machine learning and deep learning approaches for analyzing political sentiment.</p>
+                            
+                            <h5>Traditional Machine Learning Models</h5>
+                            <div class="model-comparison">
+                                <div class="model-card">
+                                    <h6>Naive Bayes</h6>
+                                    <p>\[ P(\text{class}| \text{features}) \propto P(\text{class}) \prod P(\text{feature}|\text{class}) \]</p>
+                                    <p>Fast and works well with small datasets</p>
+                                </div>
+                                <div class="model-card">
+                                    <h6>Logistic Regression</h6>
+                                    <p>\[ P(y=1) = \frac{1}{1 + e^{-(\beta_0 + \beta_1x_1 + \cdots + \beta_nx_n)}} \]</p>
+                                    <p>Provides probability estimates</p>
+                                </div>
+                                <div class="model-card">
+                                    <h6>Support Vector Machines</h6>
+                                    <p>\[ \min_{w,b} \frac{1}{2} \|w\|^2 + C \sum_{i=1}^{n} \xi_i \]</p>
+                                    <p>Effective in high-dimensional spaces</p>
+                                </div>
+                            </div>
+                            
+                            <h5>Deep Learning Models</h5>
+                            <div class="model-comparison">
+                                <div class="model-card">
+                                    <h6>LSTM Networks</h6>
+                                    <p>\[ f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) \]</p>
+                                    <p>Captures long-term dependencies in text</p>
+                                </div>
+                                <div class="model-card">
+                                    <h6>Transformer Models</h6>
+                                    <p>\[ \text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V \]</p>
+                                    <p>State-of-the-art for NLP tasks</p>
+                                </div>
+                                <div class="model-card">
+                                    <h6>BERT</h6>
+                                    <p>Bidirectional encoder representations</p>
+                                    <p>Pre-trained on large text corpora</p>
+                                </div>
+                            </div>
+                            
+                            <h5>Model Comparison</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Model</th>
+                                            <th>Accuracy</th>
+                                            <th>Training Time</th>
+                                            <th>Interpretability</th>
+                                            <th>Best Use Case</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Naive Bayes</td>
+                                            <td>75-80%</td>
+                                            <td>Fast</td>
+                                            <td>High</td>
+                                            <td>Baseline, small datasets</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Logistic Regression</td>
+                                            <td>80-85%</td>
+                                            <td>Fast</td>
+                                            <td>High</td>
+                                            <td>Interpretable predictions</td>
+                                        </tr>
+                                        <tr>
+                                            <td>SVM</td>
+                                            <td>82-87%</td>
+                                            <td>Medium</td>
+                                            <td>Medium</td>
+                                            <td>High-dimensional data</td>
+                                        </tr>
+                                        <tr>
+                                            <td>LSTM</td>
+                                            <td>85-90%</td>
+                                            <td>Slow</td>
+                                            <td>Low</td>
+                                            <td>Sequential text data</td>
+                                        </tr>
+                                        <tr>
+                                            <td>BERT</td>
+                                            <td>90-95%</td>
+                                            <td>Very Slow</td>
+                                            <td>Low</td>
+                                            <td>State-of-the-art performance</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5>BERT Architecture Details</h5>
+                            <div class="math-container">
+                                <p>BERT uses transformer architecture with multi-head attention:</p>
+                                <p>\[ \text{MultiHead}(Q,K,V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W^O \]</p>
+                                <p>\[ \text{where head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V) \]</p>
+                                
+                                <p>Pre-training objectives:</p>
+                                <p>1. Masked Language Model (MLM): Randomly mask tokens and predict them</p>
+                                <p>\[ \text{Loss} = -\sum_{i=1}^{N} \log P(\text{masked}_i | \text{context}) \]</p>
+                                
+                                <p>2. Next Sentence Prediction (NSP): Predict if sentence B follows sentence A</p>
+                                <p>\[ \text{Loss} = -\log P(\text{isNext} | \text{sentence}_A, \text{sentence}_B) \]</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Model Evaluation Tab -->
+                    <div class="tab-pane fade" id="evaluation" role="tabpanel">
+                        <div class="tech-details">
+                            <h4>Model Evaluation Metrics</h4>
+                            <p>Methods for assessing the performance of sentiment analysis models.</p>
+                            
+                            <h5>Classification Metrics</h5>
+                            <div class="math-container">
+                                <p><strong>Accuracy:</strong> \[ \frac{TP + TN}{TP + TN + FP + FN} \]</p>
+                                <p><strong>Precision:</strong> \[ \frac{TP}{TP + FP} \]</p>
+                                <p><strong>Recall:</strong> \[ \frac{TP}{TP + FN} \]</p>
+                                <p><strong>F1-Score:</strong> \[ 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}} \]</p>
+                                <p>Where TP = True Positives, TN = True Negatives, FP = False Positives, FN = False Negatives</p>
+                            </div>
+                            
+                            <h5>Confusion Matrix</h5>
+                            <div class="confusion-matrix">
+                                <div class="matrix-cell matrix-header"></div>
+                                <div class="matrix-cell matrix-header">Predicted Positive</div>
+                                <div class="matrix-cell matrix-header">Predicted Negative</div>
+                                
+                                <div class="matrix-cell matrix-header">Actual Positive</div>
+                                <div class="matrix-cell true-positive">TP: 342</div>
+                                <div class="matrix-cell false-negative">FN: 58</div>
+                                
+                                <div class="matrix-cell matrix-header">Actual Negative</div>
+                                <div class="matrix-cell false-positive">FP: 42</div>
+                                <div class="matrix-cell true-negative">TN: 358</div>
+                            </div>
+                            
+                            <h5>Cross-Validation</h5>
+                            <p>K-fold cross-validation provides robust performance estimation:</p>
+                            <div class="math-container">
+                                <p>\[ CV(k) = \frac{1}{k} \sum_{i=1}^{k} \text{Accuracy}_i \]</p>
+                                <p>Where k is the number of folds (typically 5 or 10)</p>
+                            </div>
+                            
+                            <h5>ROC Curve and AUC</h5>
+                            <p>Receiver Operating Characteristic curve plots True Positive Rate vs False Positive Rate:</p>
+                            <div class="math-container">
+                                <p>\[ \text{TPR} = \frac{TP}{TP + FN} \]</p>
+                                <p>\[ \text{FPR} = \frac{FP}{FP + TN} \]</p>
+                                <p>Area Under Curve (AUC) provides aggregate performance measure across classification thresholds.</p>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <canvas id="rocCurveChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Deployment Tab -->
+                    <div class="tab-pane fade" id="deployment" role="tabpanel">
+                        <div class="tech-details">
+                            <h4>Deployment and Production</h4>
+                            <p>Strategies for deploying NLP models in production environments.</p>
+                            
+                            <h5>Deployment Architecture</h5>
+                            <div class="technical-diagram">
+                                <div class="diagram-title">Production Deployment Pipeline</div>
+                                <div class="workflow-step">1. Data Ingestion → Social media APIs, web scraping</div>
+                                <div class="workflow-step">2. Preprocessing → Text cleaning, normalization</div>
+                                <div class="workflow-step">3. Model Serving → REST API, TensorFlow Serving</div>
+                                <div class="workflow-step">4. Storage → Databases, data lakes</div>
+                                <div class="workflow-step">5. Visualization → Dashboards, reports</div>
+                            </div>
+                            
+                            <h5>Model Serving Options</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Approach</th>
+                                            <th>Pros</th>
+                                            <th>Cons</th>
+                                            <th>Best For</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>REST API</td>
+                                            <td>Simple, language-agnostic</td>
+                                            <td>Higher latency</td>
+                                            <td>Small to medium workloads</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TensorFlow Serving</td>
+                                            <td>High performance, versioning</td>
+                                            <td>Complex setup</td>
+                                            <td>TensorFlow models</td>
+                                        </tr>
+                                        <tr>
+                                            <td>ONNX Runtime</td>
+                                            <td>Framework agnostic</td>
+                                            <td>Conversion overhead</td>
+                                            <td>Multi-framework environments</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Edge Deployment</td>
+                                            <td>Low latency, offline capability</td>
+                                            <td>Limited resources</td>
+                                            <td>Mobile applications</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5>Monitoring and Maintenance</h5>
+                            <p>Critical aspects of production NLP systems:</p>
+                            <ul>
+                                <li><strong>Performance Monitoring:</strong> Track accuracy, latency, throughput</li>
+                                <li><strong>Data Drift Detection:</strong> Monitor changes in input data distribution</li>
+                                <li><strong>Concept Drift Detection:</strong> Identify changes in relationships between inputs and outputs</li>
+                                <li><strong>Model Retraining:</strong> Periodic updates with new data</li>
+                                <li><strong>A/B Testing:</strong> Compare model versions</li>
+                            </ul>
+                            
+                            <h5>Scalability Considerations</h5>
+                            <div class="math-container">
+                                <p>For high-throughput systems, consider:</p>
+                                <p>\[ \text{Throughput} = \frac{\text{Number of requests}}{\text{Time}} \]</p>
+                                <p>\[ \text{Latency} = \frac{\text{Total processing time}}{\text{Number of requests}} \]</p>
+                                <p>Horizontal scaling can improve throughput:</p>
+                                <p>\[ \text{Max throughput} = \text{Instances} \times \text{Throughput per instance} \]</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Explanation Tab -->
+            <div class="tab-pane fade" id="explanation" role="tabpanel">
+                <h3>Explanation: Understanding NLP for Election Sentiment Analysis</h3>
+                <p>This section provides a comprehensive explanation of the methodologies, interpretations, and applications of NLP in political sentiment analysis.</p>
+                
+                <ul class="nav nav-tabs sub-tabs" id="explanationSubTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="roc-tab" data-bs-toggle="tab" data-bs-target="#roc" type="button" role="tab">ROC</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="auc-tab" data-bs-toggle="tab" data-bs-target="#auc" type="button" role="tab">AUC</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="bow-tab" data-bs-toggle="tab" data-bs-target="#bow" type="button" role="tab">Bag of Words</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="lemmatization-tab" data-bs-toggle="tab" data-bs-target="#lemmatization" type="button" role="tab">Lemmatization</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="explanationSubTabContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                        <div class="explanation-section">
+                            <h4>Project Overview</h4>
+                            <p>This application demonstrates how Natural Language Processing (NLP) techniques can be used to analyze public sentiment toward political parties and predict election outcomes based on social media data.</p>
+                            
+                            <div class="methodology-step">
+                                <h5>Why Social Media Data?</h5>
+                                <p>Social media platforms have become the modern public square where political opinions are freely expressed. Analyzing this data provides:</p>
+                                <ul>
+                                    <li>Real-time insights into public opinion</li>
+                                    <li>Large volume of diverse perspectives</li>
+                                    <li>Geographic and demographic distribution</li>
+                                    <li>Unfiltered expressions of sentiment</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Methodology Overview</h5>
+                                <p>The process involves several key steps:</p>
+                                <ol>
+                                    <li><span class="key-term">Data Collection:</span> Gathering social media posts related to political entities</li>
+                                    <li><span class="key-term">Text Preprocessing:</span> Cleaning and preparing text for analysis</li>
+                                    <li><span class="key-term">Feature Extraction:</span> Converting text to numerical representations</li>
+                                    <li><span class="key-term">Sentiment Classification:</span> Determining positive, negative, or neutral sentiment</li>
+                                    <li><span class="key-term">Aggregation & Prediction:</span> Combining results to forecast election outcomes</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-section">
+                            <h4>How to Interpret the Results</h4>
+                            <p>Understanding the output of the sentiment analysis is crucial for drawing meaningful conclusions.</p>
+                            
+                            <div class="interpretation-guide">
+                                <h5>Sentiment Scores</h5>
+                                <p>Sentiment analysis models typically output a score between -1 (most negative) and +1 (most positive). In this application:</p>
+                                <ul>
+                                    <li><span class="key-term">Positive Sentiment (0.05 to 1):</span> Indicates support, approval, or favorable opinion</li>
+                                    <li><span class="key-term">Neutral Sentiment (-0.05 to 0.05):</span> Indicates factual statements or mixed opinions</li>
+                                    <li><span class="key-term">Negative Sentiment (-1 to -0.05):</span> Indicates criticism, disapproval, or negative opinion</li>
+                                </ul>
+                                
+                                <div class="example-container">
+                                    <p><strong>Example:</strong> "Modi is doing great work for India's development" → Positive sentiment (score ~0.7)</p>
+                                    <p><strong>Example:</strong> "The government failed to control inflation" → Negative sentiment (score ~-0.6)</p>
+                                    <p><strong>Example:</strong> "Elections will be held in April" → Neutral sentiment (score ~0.0)</p>
+                                </div>
+                            </div>
+                            
+                            <div class="interpretation-guide">
+                                <h5>From Sentiment to Seat Prediction</h5>
+                                <p>Converting sentiment percentages to seat predictions involves a statistical model that considers:</p>
+                                <div class="math-container">
+                                    <p>\[ \text{Predicted Seats} = \beta_0 + \beta_1 \times \text{Sentiment\%} + \beta_2 \times \text{Regional Weight} + \beta_3 \times \text{Historical Performance} \]</p>
+                                </div>
+                                <p>Where:</p>
+                                <ul>
+                                    <li><span class="key-term">β₀</span> is the baseline intercept</li>
+                                    <li><span class="key-term">β₁</span> represents the impact of sentiment on seat share</li>
+                                    <li><span class="key-term">β₂</span> accounts for regional variations in sentiment impact</li>
+                                    <li><span class="key-term">β₃</span> incorporates historical voting patterns</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-section">
+                            <h4>Technical Implementation Details</h4>
+                            <p>This application employs multiple NLP techniques to ensure accurate sentiment analysis.</p>
+                            
+                            <div class="methodology-step">
+                                <h5>Handling Multilingual Content</h5>
+                                <p>Indian political discourse occurs in multiple languages. Our approach includes:</p>
+                                <ul>
+                                    <li>Language detection and separate processing pipelines</li>
+                                    <li>Language-specific sentiment lexicons</li>
+                                    <li>Translation of regional language content to English for model consistency</li>
+                                    <li>Cultural context consideration in sentiment interpretation</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Addressing Sarcasm and Context</h5>
+                                <p>Political discourse often contains sarcasm and irony, which challenge sentiment analysis:</p>
+                                <ul>
+                                    <li>Contextual embedding models (BERT) capture subtle linguistic cues</li>
+                                    <li>Rule-based patterns identify common sarcastic constructions</li>
+                                    <li>Emoji and punctuation analysis provides additional sentiment signals</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-section">
+                            <h4>Limitations and Considerations</h4>
+                            <p>While powerful, NLP-based sentiment analysis has important limitations to consider:</p>
+                            
+                            <div class="limitation-item">
+                                <h5>Representativeness Bias</h5>
+                                <p>Social media users are not perfectly representative of the entire electorate. Younger, urban, and tech-savvy individuals may be overrepresented.</p>
+                            </div>
+                            
+                            <div class="limitation-item">
+                                <h5>Algorithmic Bias</h5>
+                                <p>Machine learning models can inherit biases from training data. We mitigate this through:</p>
+                                <ul>
+                                    <li>Diverse training datasets across regions and demographics</li>
+                                    <li>Regular bias testing and model adjustment</li>
+                                    <li>Ensemble approaches combining multiple models</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="limitation-item">
+                                <h5>Temporal Dynamics</h5>
+                                <p>Political sentiment can change rapidly due to events, news cycles, and campaigns. Our models incorporate:</p>
+                                <ul>
+                                    <li>Time-weighting of recent data</li>
+                                    <li>Event detection and sentiment impact assessment</li>
+                                    <li>Trend analysis rather than point-in-time snapshots</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-section">
+                            <h4>Ethical Considerations</h4>
+                            <p>When conducting political sentiment analysis, we adhere to strict ethical guidelines:</p>
+                            
+                            <div class="methodology-step">
+                                <h5>Privacy Protection</h5>
+                                <p>All analysis is performed on aggregated, anonymized data. We never:</p>
+                                <ul>
+                                    <li>Identify or store personal information of individual users</li>
+                                    <li>Attribute sentiments to specific individuals</li>
+                                    <li>Use data for anything beyond statistical analysis</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Transparency</h5>
+                                <p>We believe in transparent methodology including:</p>
+                                <ul>
+                                    <li>Clear documentation of data sources and processing methods</li>
+                                    <li>Openness about limitations and potential biases</li>
+                                    <li>Explanation of how predictions are generated</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-section">
+                            <h4>Future Directions</h4>
+                            <p>We are continuously working to improve our models through:</p>
+                            
+                            <div class="methodology-step">
+                                <h5>Advanced Techniques</h5>
+                                <ul>
+                                    <li>Multimodal analysis combining text, image, and video content</li>
+                                    <li>Graph analysis of information spread and influence networks</li>
+                                    <li>Real-time sentiment tracking during key political events</li>
+                                    <li>Cross-platform sentiment integration</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Application Expansion</h5>
+                                <ul>
+                                    <li>Sentiment analysis for specific policy issues</li>
+                                    <li>Regional and demographic breakdowns</li>
+                                    <li>Longitudinal studies of sentiment evolution</li>
+                                    <li>Integration with traditional polling data</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ROC Tab -->
+                    <div class="tab-pane fade" id="roc" role="tabpanel">
+                        <div class="explanation-section">
+                            <h4>ROC (Receiver Operating Characteristic) Curve</h4>
+                            <p>The ROC curve is a fundamental tool for evaluating the performance of classification models, including sentiment analysis systems.</p>
+                            
+                            <div class="methodology-step">
+                                <h5>What is an ROC Curve?</h5>
+                                <p>An ROC curve is a graphical representation of a classification model's performance across all classification thresholds. It plots two parameters:</p>
+                                <ul>
+                                    <li><span class="key-term">True Positive Rate (TPR)</span> also known as Sensitivity or Recall:
+                                        \[ TPR = \frac{TP}{TP + FN} \]
+                                    </li>
+                                    <li><span class="key-term">False Positive Rate (FPR)</span> also known as Fall-out:
+                                        \[ FPR = \frac{FP}{FP + TN} \]
+                                    </li>
+                                </ul>
+                                
+                                <div class="technical-diagram">
+                                    <div class="diagram-title">ROC Curve Example</div>
+                                    <div class="chart-container">
+                                        <canvas id="rocExplanationChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Interpreting ROC Curves</h5>
+                                <p>The ROC curve provides valuable insights into model performance:</p>
+                                <ul>
+                                    <li><span class="key-term">Top-left corner:</span> Ideal point with FPR=0 and TPR=1, representing perfect classification</li>
+                                    <li><span class="key-term">Diagonal line:</span> Represents random guessing (AUC = 0.5)</li>
+                                    <li><span class="key-term">Above the diagonal:</span> Indicates model performance better than random chance</li>
+                                    <li><span class="key-term">Below the diagonal:</span> Suggests performance worse than random chance (could be inverted)</li>
+                                </ul>
+                                
+                                <div class="example-container">
+                                    <p><strong>Example Interpretation:</strong> A model with ROC curve that approaches the top-left corner indicates high true positive rates while maintaining low false positive rates across thresholds.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>ROC Curve in Sentiment Analysis</h5>
+                                <p>In sentiment analysis applications, ROC curves help:</p>
+                                <ul>
+                                    <li>Compare different classification algorithms</li>
+                                    <li>Determine optimal threshold for positive/negative classification</li>
+                                    <li>Visualize trade-offs between true positives and false positives</li>
+                                    <li>Evaluate model performance across different sentiment classes</li>
+                                </ul>
+                                
+                                <div class="math-container">
+                                    <p>For multi-class sentiment analysis (positive, negative, neutral), ROC curves can be created for each class using a one-vs-rest approach.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Practical Considerations</h5>
+                                <p>When using ROC curves for sentiment analysis evaluation:</p>
+                                <ul>
+                                    <li>ROC curves are particularly useful when class distributions are imbalanced</li>
+                                    <li>They provide a visual representation of classification trade-offs</li>
+                                    <li>ROC analysis helps select appropriate operating points based on application requirements</li>
+                                    <li>For sentiment analysis, the cost of false positives (misclassifying negative as positive) may differ from false negatives</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AUC Tab -->
+                    <div class="tab-pane fade" id="auc" role="tabpanel">
+                        <div class="explanation-section">
+                            <h4>AUC (Area Under the ROC Curve)</h4>
+                            <p>The Area Under the ROC Curve (AUC) provides a single-number summary of classifier performance across all possible classification thresholds.</p>
+                            
+                            <div class="methodology-step">
+                                <h5>What Does AUC Measure?</h5>
+                                <p>AUC represents the probability that a randomly chosen positive instance will be ranked higher than a randomly chosen negative instance. It provides an aggregate measure of performance across all classification thresholds.</p>
+                                
+                                <div class="math-container">
+                                    <p>The AUC value ranges from 0 to 1, where:</p>
+                                    <ul>
+                                        <li><span class="key-term">AUC = 1.0:</span> Perfect classifier</li>
+                                        <li><span class="key-term">AUC = 0.5:</span> No discriminative power (equivalent to random guessing)</li>
+                                        <li><span class="key-term">AUC < 0.5:</span> Worse than random guessing (may indicate reversed predictions)</li>
+                                        <li><span class="key-term">AUC > 0.9:</span> Excellent classifier</li>
+                                        <li><span class="key-term">AUC > 0.8:</span> Good classifier</li>
+                                        <li><span class="key-term">AUC > 0.7:</span> Fair classifier</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Interpreting AUC Values</h5>
+                                <p>AUC provides a robust measure of classifier performance that is insensitive to class distribution and classification threshold:</p>
+                                
+                                <div class="technical-diagram">
+                                    <div class="diagram-title">AUC Interpretation Guide</div>
+                                    <div class="chart-container">
+                                        <canvas id="aucExplanationChart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div class="example-container">
+                                    <p><strong>Example:</strong> An AUC of 0.85 means there's an 85% chance that the model will rank a randomly chosen positive instance higher than a randomly chosen negative instance.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>AUC Advantages for Sentiment Analysis</h5>
+                                <p>AUC is particularly valuable for evaluating sentiment analysis models because:</p>
+                                <ul>
+                                    <li>It's threshold-invariant, measuring quality of predictions irrespective of cutoff choice</li>
+                                    <li>It's scale-invariant, measuring how well predictions are ranked rather than absolute values</li>
+                                    <li>It handles class imbalance well, which is common in sentiment data</li>
+                                    <li>It provides a single metric for comparing different models</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Limitations of AUC</h5>
+                                <p>While AUC is a valuable metric, it has some limitations:</p>
+                                <ul>
+                                    <li>It doesn't provide information about actual error rates or costs</li>
+                                    <li>It can be overly optimistic for imbalanced datasets in certain cases</li>
+                                    <li>It doesn't indicate optimal operating point for specific applications</li>
+                                    <li>It may mask poor performance in specific regions of the ROC space</li>
+                                </ul>
+                                
+                                <div class="math-container">
+                                    <p>For comprehensive model evaluation, AUC should be used alongside other metrics like precision, recall, and F1-score, especially when the costs of different types of errors vary.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bag of Words Tab -->
+                    <div class="tab-pane fade" id="bow" role="tabpanel">
+                        <div class="explanation-section">
+                            <h4>Bag of Words (BoW) Model</h4>
+                            <p>The Bag of Words model is a fundamental text representation technique in natural language processing that simplifies text data for machine learning algorithms.</p>
+                            
+                            <div class="methodology-step">
+                                <h5>What is the Bag of Words Model?</h5>
+                                <p>The Bag of Words model represents text as a "bag" (multiset) of its words, disregarding grammar and word order but keeping track of word frequency. It creates a vocabulary of all unique words in the corpus and represents each document as a vector of word counts.</p>
+                                
+                                <div class="example-container">
+                                    <p><strong>Example:</strong></p>
+                                    <p>Document 1: "The party leader gave a strong speech"</p>
+                                    <p>Document 2: "The speech was strong and powerful"</p>
+                                    <p>Vocabulary: ["the", "party", "leader", "gave", "a", "strong", "speech", "was", "and", "powerful"]</p>
+                                    <p>BoW vectors:</p>
+                                    <p>Document 1: [1, 1, 1, 1, 1, 1, 1, 0, 0, 0]</p>
+                                    <p>Document 2: [1, 0, 0, 0, 0, 1, 1, 1, 1, 1]</p>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Mathematical Representation</h5>
+                                <p>The Bag of Words model can be represented mathematically as:</p>
+                                <div class="math-container">
+                                    <p>Given a vocabulary \( V = \{w_1, w_2, \ldots, w_n\} \) of size \( n \),</p>
+                                    <p>Each document \( d \) is represented as a vector: \( \vec{d} = (c_1, c_2, \ldots, c_n) \)</p>
+                                    <p>Where \( c_i \) is the count of word \( w_i \) in document \( d \).</p>
+                                </div>
+                                
+                                <p>This representation creates a document-term matrix where rows correspond to documents and columns correspond to terms in the vocabulary.</p>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Applications in Sentiment Analysis</h5>
+                                <p>The Bag of Words model is widely used in sentiment analysis because:</p>
+                                <ul>
+                                    <li>It provides a simple way to convert unstructured text into structured data</li>
+                                    <li>It captures word frequency information that often correlates with sentiment</li>
+                                    <li>It works well with traditional machine learning algorithms</li>
+                                    <li>It can be enhanced with techniques like TF-IDF weighting</li>
+                                </ul>
+                                
+                                <div class="example-container">
+                                    <p><strong>Example:</strong> In political sentiment analysis, words like "development", "progress", and "strong" might frequently appear in positive sentiment documents, while words like "corruption", "failure", and "weak" might appear in negative sentiment documents.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Limitations and Enhancements</h5>
+                                <p>While simple and effective, the Bag of Words model has several limitations:</p>
+                                <ul>
+                                    <li><span class="key-term">Loss of word order:</span> "not good" and "good not" are represented identically</li>
+                                    <li><span class="key-term">Loss of semantic meaning:</span> Doesn't capture relationships between words</li>
+                                    <li><span class="key-term">Vocabulary size:</span> Can create very high-dimensional sparse vectors</li>
+                                    <li><span class="key-term">Ignore context:</span> Doesn't consider the context in which words appear</li>
+                                </ul>
+                                
+                                <p>Common enhancements to address these limitations include:</p>
+                                <ul>
+                                    <li>N-grams (capturing word sequences)</li>
+                                    <li>TF-IDF weighting (reducing importance of common words)</li>
+                                    <li>Stop word removal</li>
+                                    <li>Stemming and lemmatization</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Python Implementation Example</h5>
+                                <div class="python-code">
+# Bag of Words implementation using sklearn
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Sample documents
+documents = [
+    "The government announced new development policies",
+    "Corruption allegations against the minister",
+    "Economic growth shows positive trends"
+]
+
+# Create CountVectorizer instance
+vectorizer = CountVectorizer()
+
+# Fit and transform the documents
+X = vectorizer.fit_transform(documents)
+
+# Get feature names
+feature_names = vectorizer.get_feature_names_out()
+
+# Convert to array and display
+print("Vocabulary:", feature_names)
+print("Document-term matrix:")
+print(X.toarray())
+
+# Output:
+# Vocabulary: ['allegations', 'against', 'announced', 'corruption', 'development',
+#              'economic', 'growth', 'minister', 'new', 'policies', 'positive',
+#              'shows', 'the', 'trends']
+# Document-term matrix:
+# [[0 0 1 0 1 0 0 0 1 1 0 0 1 0]
+#  [1 1 0 1 0 0 0 1 0 0 0 0 1 0]
+#  [0 0 0 0 0 1 1 0 0 0 1 1 0 1]]
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lemmatization Tab -->
+                    <div class="tab-pane fade" id="lemmatization" role="tabpanel">
+                        <div class="explanation-section">
+                            <h4>Lemmatization in NLP</h4>
+                            <p>Lemmatization is a text normalization technique in natural language processing that reduces words to their base or dictionary form, known as the lemma.</p>
+                            
+                            <div class="methodology-step">
+                                <h5>What is Lemmatization?</h5>
+                                <p>Lemmatization uses vocabulary and morphological analysis to remove inflectional endings and return the base or dictionary form of a word. Unlike stemming, which uses heuristic rules, lemmatization considers the context and part of speech to determine the lemma.</p>
+                                
+                                <div class="example-container">
+                                    <p><strong>Examples:</strong></p>
+                                    <ul>
+                                        <li>running → run</li>
+                                        <li>better → good</li>
+                                        <li>went → go</li>
+                                        <li>are → be</li>
+                                        <li>mice → mouse</li>
+                                        <li>policies → policy</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="math-container">
+                                    <p>Formally, lemmatization can be defined as a function:</p>
+                                    <p>\[ \text{lemma}(w) = \arg\min_{l \in L} \text{similarity}(w, l) \]</p>
+                                    <p>Where \( L \) is the set of all possible lemmas and similarity is determined through linguistic rules and dictionary lookups.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Why Use Lemmatization?</h5>
+                                <p>Lemmatization provides several benefits in text processing and NLP applications:</p>
+                                <ul>
+                                    <li><span class="key-term">Reduces dimensionality:</span> Groups different forms of the same word</li>
+                                    <li><span class="key-term">Improves feature consistency:</span> Ensures same lemma is represented consistently</li>
+                                    <li><span class="key-term">Preserves meaning:</span> Maintains semantic relationships between words</li>
+                                    <li><span class="key-term">Enhances model performance:</span> Helps machine learning models generalize better</li>
+                                </ul>
+                                
+                                <div class="example-container">
+                                    <p><strong>Example in Sentiment Analysis:</strong></p>
+                                    <p>Without lemmatization: "The government is improving, improvements continue, improved results"</p>
+                                    <p>With lemmatization: "The government is improve, improve continue, improve results"</p>
+                                    <p>This allows the model to recognize all these forms as related to the concept of "improve".</p>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Lemmatization vs. Stemming</h5>
+                                <p>While both techniques reduce words to their base forms, they differ in important ways:</p>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Aspect</th>
+                                                <th>Stemming</th>
+                                                <th>Lemmatization</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Approach</td>
+                                                <td>Rule-based, heuristic</td>
+                                                <td>Dictionary-based, morphological analysis</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Output</td>
+                                                <td>Word stem (may not be a valid word)</td>
+                                                <td>Lemma (always a valid word)</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Context awareness</td>
+                                                <td>No</td>
+                                                <td>Yes (considers part of speech)</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Accuracy</td>
+                                                <td>Lower</td>
+                                                <td>Higher</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Computational cost</td>
+                                                <td>Lower</td>
+                                                <td>Higher</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Example</td>
+                                                <td>"running" → "run", "better" → "better"</td>
+                                                <td>"running" → "run", "better" → "good"</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Implementation in Python</h5>
+                                <p>Popular NLP libraries provide lemmatization capabilities:</p>
+                                
+                                <div class="python-code">
+# Lemmatization using NLTK
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+
+# Download required resources (first time only)
+# nltk.download('wordnet')
+# nltk.download('omw-1.4')
+# nltk.download('averaged_perceptron_tagger')
+
+# Initialize lemmatizer
+lemmatizer = WordNetLemmatizer()
+
+# Simple lemmatization
+print(lemmatizer.lemmatize("running"))  # Output: running
+print(lemmatizer.lemmatize("running", pos='v'))  # Output: run
+
+# Lemmatization with POS tagging
+def get_wordnet_pos(treebank_tag):
+    """Convert treebank POS tag to wordnet POS tag"""
+    if treebank_tag.startswith('J'):
+        return wordnet.ADJ
+    elif treebank_tag.startswith('V'):
+        return wordnet.VERB
+    elif treebank_tag.startswith('N'):
+        return wordnet.NOUN
+    elif treebank_tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return wordnet.NOUN  # Default to noun
+
+# Lemmatize with POS context
+sentence = "The government's policies are improving economic conditions"
+tokens = nltk.word_tokenize(sentence)
+pos_tags = nltk.pos_tag(tokens)
+
+lemmatized = []
+for word, tag in pos_tags:
+    wn_tag = get_wordnet_pos(tag)
+    lemma = lemmatizer.lemmatize(word, pos=wn_tag)
+    lemmatized.append(lemma)
+
+print("Original:", sentence)
+print("Lemmatized:", " ".join(lemmatized))
+# Output: "The government 's policy be improve economic condition"
+                                </div>
+                                
+                                <div class="python-code">
+# Lemmatization using spaCy
+import spacy
+
+# Load English model
+nlp = spacy.load("en_core_web_sm")
+
+# Process text
+doc = nlp("The governments are implementing better policies for development")
+
+# Extract lemmas
+lemmas = [token.lemma_ for token in doc]
+
+print("Original: The governments are implementing better policies for development")
+print("Lemmatized:", " ".join(lemmas))
+# Output: "the government be implement good policy for development"
+                                </div>
+                            </div>
+                            
+                            <div class="methodology-step">
+                                <h5>Considerations for Sentiment Analysis</h5>
+                                <p>When applying lemmatization to sentiment analysis tasks:</p>
+                                <ul>
+                                    <li>Lemmatization can help group sentiment-bearing words with different inflections</li>
+                                    <li>It may sometimes obscure nuances (e.g., "better" → "good" loses comparative meaning)</li>
+                                    <li>For some applications, preserving certain inflections might be important for sentiment</li>
+                                    <li>It's essential to evaluate whether lemmatization improves model performance for your specific task</li>
+                                </ul>
+                                
+                                <div class="example-container">
+                                    <p><strong>Political Sentiment Example:</strong></p>
+                                    <p>Original: "The candidate's promises are convincing, and voters were convinced by the arguments"</p>
+                                    <p>Lemmatized: "The candidate's promise be convince, and voter be convince by the argument"</p>
+                                    <p>This normalization helps the model recognize the consistent sentiment across different forms of "convince".</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>NLP for Election Sentiment Analysis | Natural Language Processing for Political Forecasting</p>
+        <p class="text-muted">Note: This is a demonstration application. Actual sentiment analysis requires careful model validation.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize charts and functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize source distribution chart
+            const sourceCtx = document.getElementById('sourceDistributionChart').getContext('2d');
+            const sourceChart = new Chart(sourceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Twitter', 'Facebook', 'Reddit', 'News', 'YouTube'],
+                    datasets: [{
+                        data: [45, 25, 15, 10, 5],
+                        backgroundColor: [
+                            '#1da1f2',
+                            '#3b5998',
+                            '#ff5700',
+                            '#e74a3b',
+                            '#ff0000'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Data Source Distribution'
+                        }
+                    }
+                }
+            });
+            
+            // Initialize quality metrics chart
+            const qualityCtx = document.getElementById('qualityMetricsChart').getContext('2d');
+            const qualityChart = new Chart(qualityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Relevance', 'Completeness', 'Timeliness', 'Accuracy'],
+                    datasets: [{
+                        label: 'Quality Score (%)',
+                        data: [92, 85, 96, 88],
+                        backgroundColor: '#4e73df'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Data Quality Metrics'
+                        }
+                    }
+                }
+            });
+            
+            // Initialize sentiment chart
+            const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentChart = new Chart(sentimentCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'BJP Sentiment',
+                            data: [65, 68, 72, 70, 75, 78],
+                            borderColor: '#ff9933',
+                            backgroundColor: 'rgba(255, 153, 51, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Congress Sentiment',
+                            data: [55, 52, 48, 45, 42, 40],
+                            borderColor: '#006400',
+                            backgroundColor: 'rgba(0, 100, 0, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'AAP Sentiment',
+                            data: [60, 58, 62, 65, 63, 60],
+                            borderColor: '#0078d7',
+                            backgroundColor: 'rgba(0, 120, 215, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Sentiment Score'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Political Sentiment Trends Over Time'
+                        }
+                    }
+                }
+            });
+            
+            // Initialize sentiment distribution chart
+            const sentimentDistCtx = document.getElementById('sentimentDistributionChart').getContext('2d');
+            const sentimentDistChart = new Chart(sentimentDistCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Positive', 'Neutral', 'Negative'],
+                    datasets: [{
+                        data: [45, 30, 25],
+                        backgroundColor: [
+                            '#1cc88a',
+                            '#f6c23e',
+                            '#e74a3b'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Overall Sentiment Distribution'
+                        }
+                    }
+                }
+            });
+            
+            // Initialize text stats chart
+            const textStatsCtx = document.getElementById('textStatsChart').getContext('2d');
+            const textStatsChart = new Chart(textStatsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Word Count', 'Unique Words', 'Avg Word Length', 'Readability Score'],
+                    datasets: [{
+                        label: 'Text Statistics',
+                        data: [24, 18, 5.2, 72],
+                        backgroundColor: '#4e73df'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Text Statistics'
+                        }
+                    }
+                }
+            });
+            
+            // Initialize ROC curve chart
+            const rocCtx = document.getElementById('rocCurveChart').getContext('2d');
+            const rocChart = new Chart(rocCtx, {
+                type: 'line',
+                data: {
+                    labels: ['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1'],
+                    datasets: [{
+                        label: 'ROC Curve (AUC = 0.92)',
+                        data: [0, 0.15, 0.35, 0.55, 0.7, 0.8, 0.87, 0.92, 0.96, 0.98, 1],
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'False Positive Rate'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'True Positive Rate'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Receiver Operating Characteristic (ROC) Curve'
+                        }
+                    }
+                }
+            });
+            
+            // Initialize ROC explanation chart
+            const rocExplanationCtx = document.getElementById('rocExplanationChart').getContext('2d');
+            const rocExplanationChart = new Chart(rocExplanationCtx, {
+                type: 'line',
+                data: {
+                    labels: ['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1'],
+                    datasets: [
+                        {
+                            label: 'Perfect Classifier (AUC = 1.0)',
+                            data: [0, 0.2, 0.4, 0.6, 0.8, 1, 1, 1, 1, 1, 1],
+                            borderColor: '#1cc88a',
+                            backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Good Classifier (AUC = 0.85)',
+                            data: [0, 0.15, 0.35, 0.55, 0.7, 0.8, 0.87, 0.92, 0.96, 0.98, 1],
+                            borderColor: '#4e73df',
+                            backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Random Guessing (AUC = 0.5)',
+                            data: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+                            borderColor: '#6c757d',
+                            backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'False Positive Rate'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'True Positive Rate'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'ROC Curves for Different Classifiers'
+                        }
+                    }
+                }
+            });
+            
+            // Initialize AUC explanation chart
+            const aucExplanationCtx = document.getElementById('aucExplanationChart').getContext('2d');
+            const aucExplanationChart = new Chart(aucExplanationCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Perfect', 'Excellent', 'Good', 'Fair', 'Poor', 'Worse than Random'],
+                    datasets: [{
+                        label: 'AUC Value',
+                        data: [1.0, 0.9, 0.8, 0.7, 0.6, 0.4],
+                        backgroundColor: [
+                            '#1cc88a',
+                            '#4e73df',
+                            '#36b9cc',
+                            '#f6c23e',
+                            '#e74a3b',
+                            '#5a5c69'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0,
+                            title: {
+                                display: true,
+                                text: 'AUC Value'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'AUC Interpretation Guide'
+                        }
+                    }
+                }
+            });
+            
+            // Update sample value display
+            updateSampleValue();
+        });
+        
+        // Update sample value display
+        function updateSampleValue() {
+            const slider = document.getElementById('sampleRange');
+            const valueDisplay = document.getElementById('sampleValue');
+            valueDisplay.textContent = Number(slider.value).toLocaleString();
+        }
+        
+        // Collect data function
+        function collectData() {
+            const sampleSize = parseInt(document.getElementById('sampleRange').value);
+            const sources = Array.from(document.getElementById('dataSources').selectedOptions)
+                .map(option => option.value);
+            
+            // Generate sample data for preview
+            let tableHTML = '';
+            const sampleData = [
+                {source: 'twitter', text: 'Modi is doing great work for India! #VoteBJP', language: 'english', date: '2024-04-15'},
+                {source: 'facebook', text: 'Congress needs to improve their leadership', language: 'hindi', date: '2024-04-14'},
+                {source: 'reddit', text: 'AAP is making good progress in education sector', language: 'english', date: '2024-04-13'},
+                {source: 'news', text: 'Election commission announces polling dates', language: 'english', date: '2024-04-12'},
+                {source: 'youtube', text: 'Price rise is affecting common people', language: 'hindi', date: '2024-04-11'}
+            ];
+            
+            sampleData.forEach(item => {
+                tableHTML += `<tr>
+                    <td>${item.source}</td>
+                    <td>${item.text}</td>
+                    <td>${item.language}</td>
+                    <td>${item.date}</td>
+                </tr>`;
+            });
+            
+            document.getElementById('dataPreview').innerHTML = tableHTML;
+            
+            // Show success message
+            alert(`Collected ${sampleSize.toLocaleString()} data points from ${sources.join(', ')}!`);
+        }
+        
+        // Process text function
+        function processText() {
+            const inputText = document.getElementById('inputText').value;
+            const lowercase = document.getElementById('lowercaseCheck').checked;
+            const removePunct = document.getElementById('removePunctCheck').checked;
+            const removeStopwords = document.getElementById('removeStopwordsCheck').checked;
+            const lemmatize = document.getElementById('lemmatizeCheck').checked;
+            
+            let processedText = inputText;
+            
+            if (lowercase) {
+                processedText = processedText.toLowerCase();
+            }
+            
+            if (removePunct) {
+                processedText = processedText.replace(/[^\w\s]/g, '');
+            }
+            
+            // Simple simulation of stopword removal and lemmatization
+            if (removeStopwords) {
+                const stopwords = ['is', 'for', 'the', 'are', 'am', 'was', 'were', 'be', 'being', 'been'];
+                processedText = processedText.split(' ').filter(word => !stopwords.includes(word)).join(' ');
+            }
+            
+            if (lemmatize) {
+                // Simple lemmatization simulation
+                const lemmatizationMap = {
+                    'doing': 'do',
+                    'growing': 'grow',
+                    'works': 'work',
+                    'developed': 'develop'
+                };
+                
+                processedText = processedText.split(' ').map(word => {
+                    return lemmatizationMap[word] || word;
+                }).join(' ');
+            }
+            
+            document.getElementById('processedText').textContent = processedText;
+        }
+        
+        // Analyze sentiment function
+        function analyzeSentiment() {
+            const model = document.getElementById('modelSelect').value;
+            const parties = Array.from(document.getElementById('partiesSelect').selectedOptions)
+                .map(option => option.value);
+            const timeFrame = document.getElementById('timeFrameSelect').value;
+            const region = document.getElementById('regionSelect').value;
+            
+            // Update model performance display
+            const performanceHTML = `
+                <h6>Model: ${model.toUpperCase()}</h6>
+                <p>Accuracy: ${(85 + Math.random() * 10).toFixed(1)}%</p>
+                <p>Precision: ${(82 + Math.random() * 12).toFixed(1)}%</p>
+                <p>Recall: ${(80 + Math.random() * 15).toFixed(1)}%</p>
+                <p>F1-Score: ${(83 + Math.random() * 10).toFixed(1)}%</p>
+            `;
+            
+            document.getElementById('modelPerformance').innerHTML = performanceHTML;
+            
+            // Show notification
+            alert(`Analyzed sentiment for ${parties.join(', ')} using ${model} model for ${timeFrame} days in ${region} region.`);
+        }
+        
+        // Download data function
+        function downloadData() {
+            alert('This would download the collected data in a real implementation.');
+        }
+    </script>
+</body>
+</html>
